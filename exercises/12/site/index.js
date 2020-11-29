@@ -31,6 +31,18 @@ app.use(
   })
 );
 
+app.use(helmet.contentSecurityPolicy({
+    directives: {
+        scriptSrc: ["'self'", 'code.jquery.com'],
+        reportUri: '/report-violation',
+    },
+}))
+
+app.route('/report-violation').post((req, res) => {
+    console.log(`CSP violation: ${req.body || 'no data'}`)
+    res.status(200).send('ok')
+})
+
 app.use(csurf());
 app.use(function(err, req, res, next) {
   if (err.code !== "EBADCSRFTOKEN") return next(err);

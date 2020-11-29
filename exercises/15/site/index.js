@@ -2,6 +2,7 @@ const localHost = require("https-localhost");
 const helmet = require("helmet");
 const bodyParser = require("body-parser");
 const express = require("express");
+const cryptoRandomString = require("crypto-random-string");
 const session = require("express-session");
 const csurf = require("csurf");
 const routeLogin = require("./routes/login");
@@ -20,10 +21,15 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+    res.locals.nonce = cryptoRandomString(16);
+    next();
+})
+
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
-      scriptSrc: ["'self'", "https:"],
+      scriptSrc: ["'self'", (req, res) => `'nonce-${res.locals.nonce}'`],
       reportUri: "/report-violation"
     }
   })

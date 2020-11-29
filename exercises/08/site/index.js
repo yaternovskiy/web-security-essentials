@@ -2,6 +2,7 @@ const localHost = require("https-localhost");
 const helmet = require("helmet");
 const express = require("express");
 const session = require("express-session");
+const csurf = require("csurf");
 const routeLogin = require("./routes/login");
 const routeMessages = require("./routes/messages");
 
@@ -24,17 +25,34 @@ app.use(
     resave: false,
     saveUninitialized: true,
     cookie: {
-      sameSite: "lax",
       secure: true,
       httpOnly: false
     }
   })
 );
 
+app.use(csurf());
+
+// app.get(
+//     '/login',
+//     csurf,
+//     (req, res) => {
+//         // pass the csrfToken to the view
+//         res.render('send', { csrfToken: req.csrfToken() })
+//     })
+
 routeLogin(app);
 routeMessages(app);
 
 app.use("/static", express.static(__dirname + "/static"));
+
+app.use((err, req, res, next) => {
+    if (err.code !== 'EBADCSRFTOKEN') return next(err)
+
+    // handle CSRF token errors
+    res.status(403)
+    res.send('csrf detected')
+})
 
 app.listen(port);
 
